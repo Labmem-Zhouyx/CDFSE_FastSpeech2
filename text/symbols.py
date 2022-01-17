@@ -8,7 +8,7 @@ The default is a set of ASCII characters that works well for English or text tha
 from text import cmudict, pinyin
 
 _pad = "_"
-_punctuation = "!'(),.:;? "
+_punctuation = "/!'(),.:;? "
 _special = "-"
 _letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 _silences = ["@sp", "@spn", "@sil"]
@@ -20,10 +20,10 @@ _pinyin = ["@" + s for s in pinyin.valid_symbols]
 # Export all symbols:
 symbols = (
     [_pad]
-    # + list(_special)
-    # + list(_punctuation)
-    # + list(_letters)
-    # + _arpabet
+    + list(_special)
+    + list(_punctuation)
+    + list(_letters)
+    + _arpabet
     + _pinyin
     + _silences
 )
