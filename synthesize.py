@@ -61,18 +61,21 @@ def preprocess_mandarin(text, preprocess_config):
     lexicon = read_lexicon(preprocess_config["path"]["lexicon_path"])
 
     phones = []
-    # pinyins = [
-    #     p[0]
-    #     for p in pinyin(
-    #         text, style=Style.TONE3, strict=False, neutral_tone_with_five=True
-    #     )
-    # ]
-    pinyins = text.split(' ')
+    # For chinese text input
+    pinyins = [
+        p[0]
+        for p in pinyin(
+            text, style=Style.TONE3, strict=False, neutral_tone_with_five=True
+        )
+    ]
+    # For pinyin sequence input
+    # pinyins = text.split(' ')
     for p in pinyins:
         if p in lexicon:
             phones += lexicon[p]
         else:
             phones.append("sp")
+    phones.append("sp")
 
     phones = "{" + " ".join(phones) + "}"
     print("Raw Text Sequence: {}".format(text))
@@ -209,8 +212,9 @@ if __name__ == "__main__":
             texts = np.array([preprocess_mandarin(args.text, preprocess_config)])
         text_lens = np.array([len(texts[0])])
         if args.ref_mel != '':
-            ref_mels = np.load(os.path.join(preprocess_config["path"]["preprocessed_path"], "mel", args.ref_mel))
-        batchs = [(ids, raw_texts, texts, text_lens, max(text_lens), ref_mels)]
+            ref_mels = np.array([np.load(os.path.join(preprocess_config["path"]["preprocessed_path"], "mel", args.ref_mel))])
+        ref_mel_lens = np.array([len(ref_mels[0])])
+        batchs = [(ids, raw_texts, texts, text_lens, max(text_lens), ref_mels, ref_mel_lens)]
 
     control_values = args.pitch_control, args.energy_control, args.duration_control
 

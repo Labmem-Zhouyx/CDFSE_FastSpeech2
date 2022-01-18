@@ -88,8 +88,8 @@ class FastSpeech2Loss(nn.Module):
         duration_loss = self.mse_loss(log_duration_predictions, log_duration_targets)
 
 
-        #print("target:", ref_linguistic_targets[0])
-        #print("pred:", ref_content_predicts[0].argmax(-1))
+        # print("target:", ref_linguistic_targets[0])
+        # print("pred:", ref_content_predicts[0].argmax(-1))
         cls_loss = self.ce_loss(ref_content_predicts.transpose(1, 2), ref_linguistic_targets)
         ref_content_predicts = ref_content_predicts.argmax(-1).masked_select(ref_mel_masks)
         ref_linguistic_targets = ref_linguistic_targets.masked_select(ref_mel_masks)
