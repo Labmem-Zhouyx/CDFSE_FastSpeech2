@@ -16,10 +16,14 @@ class FastSpeech2Loss(nn.Module):
         self.mse_loss = nn.MSELoss()
         self.mae_loss = nn.L1Loss()
         self.ce_loss = nn.CrossEntropyLoss(ignore_index=0)
+        self.spk_ce_loss = nn.CrossEntropyLoss()
         self.cls_weight = model_config["weight"]["cls"]
 
     def forward(self, inputs, predictions):
         (
+            speaker_targets,
+            _,
+            _,
             mel_targets,
             _,
             _,
@@ -27,7 +31,7 @@ class FastSpeech2Loss(nn.Module):
             energy_targets,
             duration_targets,
             ref_linguistic_targets,
-        ) = inputs[7:]
+        ) = inputs[5:]
         (
             mel_predictions,
             postnet_mel_predictions,
@@ -42,7 +46,8 @@ class FastSpeech2Loss(nn.Module):
             ref_content_predicts,
             _,
             ref_mel_masks,
-            _
+            _,
+            speaker_predicts,
         ) = predictions
         src_masks = ~src_masks
         mel_masks = ~mel_masks
@@ -56,6 +61,7 @@ class FastSpeech2Loss(nn.Module):
         energy_targets.requires_grad = False
         mel_targets.requires_grad = False
         ref_linguistic_targets.requires_grad = False
+        speaker_targets.requires_grad = False
 
         if self.pitch_feature_level == "phoneme_level":
             pitch_predictions = pitch_predictions.masked_select(src_masks)
@@ -87,16 +93,20 @@ class FastSpeech2Loss(nn.Module):
         energy_loss = self.mse_loss(energy_predictions, energy_targets)
         duration_loss = self.mse_loss(log_duration_predictions, log_duration_targets)
 
+        if speaker_predicts is not None:
+            speaker_loss = self.spk_ce_loss(speaker_predicts, speaker_targets)
+        else:
+            speaker_loss = 0.0
 
-        # print("target:", ref_linguistic_targets[0])
-        # print("pred:", ref_content_predicts[0].argmax(-1))
+        # print("target:", speaker_targets)
+        # print("pred:", speaker_predicts.argmax(-1))
         cls_loss = self.ce_loss(ref_content_predicts.transpose(1, 2), ref_linguistic_targets)
         ref_content_predicts = ref_content_predicts.argmax(-1).masked_select(ref_mel_masks)
         ref_linguistic_targets = ref_linguistic_targets.masked_select(ref_mel_masks)
         cls_acc = (ref_content_predicts == ref_linguistic_targets).float().mean()
 
         total_loss = (
-            mel_loss + postnet_mel_loss + duration_loss + pitch_loss + energy_loss + self.cls_weight * cls_loss
+            mel_loss + postnet_mel_loss + duration_loss + pitch_loss + energy_loss + self.cls_weight * cls_loss + self.cls_weight * speaker_loss
         )
 
 
@@ -108,5 +118,6 @@ class FastSpeech2Loss(nn.Module):
             energy_loss,
             duration_loss,
             cls_loss,
-            cls_acc
+            cls_acc,
+            speaker_loss,
         )

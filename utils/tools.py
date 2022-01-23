@@ -17,13 +17,14 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def to_device(data, device):
-    if len(data) == 14:
+    if len(data) == 15:
         (
             ids,
             raw_texts,        
             texts,
             src_lens,
             max_src_len,
+            speakers,
             ref_mels,
             ref_mel_lens,
             mels,
@@ -37,6 +38,7 @@ def to_device(data, device):
 
         texts = torch.from_numpy(texts).long().to(device)
         src_lens = torch.from_numpy(src_lens).to(device)
+        speakers = torch.from_numpy(speakers).to(device)
         ref_mels = torch.from_numpy(ref_mels).float().to(device)
         ref_mel_lens = torch.from_numpy(ref_mel_lens).to(device)
         mels = torch.from_numpy(mels).float().to(device)
@@ -52,6 +54,7 @@ def to_device(data, device):
             texts,
             src_lens,
             max_src_len,
+            speakers,
             ref_mels,
             ref_mel_lens,
             mels,
@@ -70,8 +73,9 @@ def to_device(data, device):
         src_lens = torch.from_numpy(src_lens).to(device)
         ref_mels = torch.from_numpy(ref_mels).float().to(device)
         ref_mel_lens = torch.from_numpy(ref_mel_lens).to(device)
+        speakers = None
 
-        return (ids, raw_texts, texts, src_lens, max_src_len, ref_mels, ref_mel_lens)
+        return (ids, raw_texts, texts, src_lens, max_src_len, speakers, ref_mels, ref_mel_lens)
 
 
 def log(
@@ -86,6 +90,7 @@ def log(
         logger.add_scalar("Loss/duration_loss", losses[5], step)
         logger.add_scalar("Loss/cls_loss", losses[6], step)
         logger.add_scalar("Loss/cls_acc", losses[7], step)
+        logger.add_scalar("Loss/spkcls_loss", losses[8], step)
 
     if fig is not None:
         logger.add_figure(tag, fig)

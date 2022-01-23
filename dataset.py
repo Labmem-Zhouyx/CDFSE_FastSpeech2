@@ -159,6 +159,7 @@ class Dataset(Dataset):
             texts,
             text_lens,
             max(text_lens),
+            speakers,
             ref_mels,
             ref_mel_lens,
             mels,
@@ -244,7 +245,6 @@ class TextDataset(Dataset):
         ref_mels = [d[3] for d in data]
         text_lens = np.array([text.shape[0] for text in texts])
         ref_mel_lens = np.array([ref_mel.shape[0] for ref_mel in ref_mels])
-
         texts = pad_1D(texts)
         ref_mels = pad_2D(ref_mels)
         

@@ -51,6 +51,7 @@ reference_attention:
   attention_dropout: 0.0
 
 use_BPT: False
+use_spkcls: False
 
 weight:
   cls: 1.0

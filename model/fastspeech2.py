@@ -45,6 +45,7 @@ class FastSpeech2(nn.Module):
             out_dim=len(symbols),
             hidden_dims=model_config["classifier"]["cls_hidden"]
         )
+
         self.content_embedding = nn.Embedding(
             len(symbols), model_config["frame_encoder"]["out_dim"]
         )
@@ -70,10 +71,26 @@ class FastSpeech2(nn.Module):
             pooling_sizes=model_config["downsample_encoder"]["pooling_sizes"],
             out_dim=model_config["downsample_encoder"]["out_dim"],
         )
-        
+
+        self.use_spkcls = model_config["use_spkcls"]
+        if self.use_spkcls:
+            with open(
+                os.path.join(
+                    preprocess_config["path"]["preprocessed_path"], "speakers.json"
+                ),
+                "r",
+            ) as f:
+                n_speaker = len(json.load(f))
+            self.speaker_classifier = AdversarialClassifier(
+                in_dim=model_config["downsample_encoder"]["out_dim"],
+                out_dim=n_speaker,
+                hidden_dims=model_config["classifier"]["cls_hidden"]
+            )
+
         #BPT
         self.use_BPT = model_config["use_BPT"]
-        if self.use_BPT == True:
+
+        if self.use_BPT:
             self.bpt = StyleTokenLayer(
                 query_dim=model_config["content_encoder"]["out_dim"],
                 num_tokens=model_config["bpt"]["num_tokens"],
@@ -89,15 +106,14 @@ class FastSpeech2(nn.Module):
             ref_attention_dropout=model_config["reference_attention"]["attention_dropout"],
         )
 
-
-
     def forward(
         self,
         texts,
         src_lens,
         max_src_len,
-        ref_mels,
-        ref_mel_lens,
+        speakers=None,
+        ref_mels=None,
+        ref_mel_lens=None,
         mels=None,
         mel_lens=None,
         max_mel_len=None,
@@ -128,19 +144,24 @@ class FastSpeech2(nn.Module):
         else:
             ref_content_embed = self.content_embedding(ref_content_predict.argmax(-1))
 
-        if self.use_BPT == True:
+        if self.use_BPT:
             content_feature = self.bpt(content_feature)
 
         ref_local_content_emb = self.ds_content_encoder(content_feature)
         ref_local_speaker_emb = self.ds_speaker_encoder(frame_feature)
-        
-        #if self.use_BPT == True:
-        #    ref_local_content_emb = self.bpt(ref_local_content_emb)
-        # print(ref_local_speaker_emb)
+
+        if self.use_spkcls:
+            ref_local_lens = ref_mel_lens // 16
+            ref_local_spk_masks = (1 - get_mask_from_lengths(ref_local_lens, max(ref_local_lens)).float()).unsqueeze(-1).expand(-1, -1, 256)
+            spkemb = torch.sum(ref_local_speaker_emb * ref_local_spk_masks, axis=1) / ref_local_lens.unsqueeze(-1).expand(-1, 256)
+            speaker_predicts = self.speaker_classifier(spkemb, is_reversal=False)
+        else:
+            speaker_predicts = None
+
         local_spk_emb, ref_alignments = self.ref_atten(
             output, src_lens, ref_local_content_emb, ref_local_speaker_emb, ref_mels, ref_mel_lens
         )
-        # print(local_spk_emb)  
+
         output = output + local_spk_emb
       
         (
@@ -183,5 +204,6 @@ class FastSpeech2(nn.Module):
             ref_content_predict,
             ref_alignments,
             ref_mel_masks,
-            local_spk_emb
+            local_spk_emb,
+            speaker_predicts,
         )
