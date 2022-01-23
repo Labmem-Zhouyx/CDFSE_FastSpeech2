@@ -37,7 +37,7 @@ def evaluate(model, step, configs, logger=None, vocoder=None):
     Loss = FastSpeech2Loss(preprocess_config, model_config).to(device)
 
     # Evaluation
-    loss_sums = [0 for _ in range(8)]
+    loss_sums = [0 for _ in range(9)]
     for batchs in loader:
         for batch in batchs:
             batch = to_device(batch, device)
@@ -53,7 +53,7 @@ def evaluate(model, step, configs, logger=None, vocoder=None):
 
     loss_means = [loss_sum / len(dataset) for loss_sum in loss_sums]
 
-    message = "Validation Step {}, Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, Duration Loss: {:.4f}, Cls Loss: {:.4f}, Cls acc: {:.4f}".format(
+    message = "Validation Step {}, Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, Duration Loss: {:.4f}, Cls Loss: {:.4f}, Cls acc: {:.4f}, SpkCls Loss: {:.4f}".format(
         *([step] + [l for l in loss_means])
     )
 
