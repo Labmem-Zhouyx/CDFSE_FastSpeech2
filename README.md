@@ -44,7 +44,7 @@ python3 synthesize.py --source synbatch_sample.txt --restore_step 500000 --mode 
 	
 For single:
 ```bash
-python3 synthesize.py --text "╡Бйтр╩об╨оЁип╖╧Ш." --refspeech [REF_MEL_PATH.npy] --restore_step 500000 --mode single -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml 
+python3 synthesize.py --text "Ф╣▀Х╞∙Д╦─Д╦▀Е░┬Ф┬░Ф∙┬Ф·°." --ref_mel [REF_MEL_PATH.npy] --restore_step 500000 --mode single -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml 
 ```
 
 	
