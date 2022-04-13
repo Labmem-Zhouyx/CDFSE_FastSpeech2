@@ -308,10 +308,10 @@ class AdversarialClassifier(nn.Module):
     def __init__(self, in_dim, out_dim, hidden_dims=[256], rev_scale=1):
         """
         Args:
-             in_dim: input dimension
+            in_dim: input dimension
             out_dim: number of units of output layer (number of classes)
-        hidden_dims: number of units of hidden layers
-          rev_scale: gradient reversal scale
+            hidden_dims: number of units of hidden layers
+            rev_scale: gradient reversal scale
         """
         super(AdversarialClassifier, self).__init__()
 

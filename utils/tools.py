@@ -17,6 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def to_device(data, device):
+
     if len(data) == 15:
         (
             ids,
@@ -88,9 +89,9 @@ def log(
         logger.add_scalar("Loss/pitch_loss", losses[3], step)
         logger.add_scalar("Loss/energy_loss", losses[4], step)
         logger.add_scalar("Loss/duration_loss", losses[5], step)
-        logger.add_scalar("Loss/cls_loss", losses[6], step)
-        logger.add_scalar("Loss/cls_acc", losses[7], step)
-        logger.add_scalar("Loss/spkcls_loss", losses[8], step)
+        logger.add_scalar("Loss/phone_loss", losses[6], step)
+        logger.add_scalar("Loss/phone_acc", losses[7], step)
+        logger.add_scalar("Loss/speaker_loss", losses[8], step)
 
     if fig is not None:
         logger.add_figure(tag, fig)
@@ -133,7 +134,7 @@ def synth_one_sample(targets, predictions, vocoder, model_config, preprocess_con
     mel_prediction = predictions[1][0, :mel_len].detach().transpose(0, 1)
     ref_alignment = predictions[11][0, :src_len].detach().transpose(0, 1).cpu().numpy()
 
-    duration = targets[12][0, :src_len].detach().cpu().numpy()
+    duration = targets[13][0, :src_len].detach().cpu().numpy()
     if preprocess_config["preprocessing"]["pitch"]["feature"] == "phoneme_level":
         pitch = targets[11][0, :src_len].detach().cpu().numpy()
         pitch = expand(pitch, duration)
@@ -210,6 +211,8 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
             stats = json.load(f)
             stats = stats["pitch"] + stats["energy"][:2]
 
+        # np.save(os.path.join(path, basename + ".npy"), mel_prediction.cpu().numpy())
+
         fig = plot_mel(
             [
                 (mel_prediction.cpu().numpy(), pitch, energy),
@@ -222,16 +225,16 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
 
         im = Image.fromarray(plot_reference_alignment_to_numpy(ref_alignment))
         im.save(os.path.join(path, 'refalign_{}.jpg'.format(basename)))
-        
-        #spk_emb = predictions[13][i, :src_len].detach().cpu().numpy()
-        #phoneme_seq = targets[2][i, :src_len].detach().cpu().numpy()
-        #for j in range(src_len):
-        #    np.save(os.path.join(path, 'huatu', '{}_{}_{}.npy'.format(basename, str(j), str(phoneme_seq[j]))), spk_emb[j])
+
+        # spk_emb = predictions[13][i, :src_len].detach().cpu().numpy()
+        # phoneme_seq = targets[2][i, :src_len].detach().cpu().numpy()
+        # for j in range(src_len):
+        #    np.save(os.path.join(path, "huatu", '{}_{}_{}.npy'.format(basename, str(j), str(phoneme_seq[j]))), spk_emb[j])
 
     from .model import vocoder_infer
-
     mel_predictions = predictions[1].transpose(1, 2)
     lengths = predictions[9] * preprocess_config["preprocessing"]["stft"]["hop_length"]
+
     wav_predictions = vocoder_infer(
         mel_predictions, vocoder, model_config, preprocess_config, lengths=lengths
     )

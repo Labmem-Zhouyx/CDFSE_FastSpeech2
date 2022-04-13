@@ -2,6 +2,7 @@ import os
 import re
 import argparse
 from string import punctuation
+from tqdm import tqdm
 
 import torch
 import yaml
@@ -12,8 +13,9 @@ from pypinyin import pinyin, Style
 
 from utils.model import get_model, get_vocoder
 from utils.tools import to_device, synth_samples
-from dataset import TextDataset
+from dataset import TextDataset, Dataset
 from text import text_to_sequence
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -93,24 +95,25 @@ def synthesize(model, step, configs, vocoder, batchs, control_values):
     preprocess_config, model_config, train_config = configs
     pitch_control, energy_control, duration_control = control_values
 
-    for batch in batchs:
-        batch = to_device(batch, device)
-        with torch.no_grad():
-            # Forward
-            output = model(
-                *(batch[2:]),
-                p_control=pitch_control,
-                e_control=energy_control,
-                d_control=duration_control
-            )
-            synth_samples(
-                batch,
-                output,
-                vocoder,
-                model_config,
-                preprocess_config,
-                train_config["path"]["result_path"],
-            )
+    for batch in tqdm(batchs):
+            batch = to_device(batch, device)
+            with torch.no_grad():
+                # Forward
+                output = model(
+                    *(batch[2:]),
+                    p_control=pitch_control,
+                    e_control=energy_control,
+                    d_control=duration_control
+                )
+                synth_samples(
+                    batch,
+                    output,
+                    vocoder,
+                    model_config,
+                    preprocess_config,
+                    train_config["path"]["result_path"],
+                )
+
 
 
 if __name__ == "__main__":
@@ -201,7 +204,8 @@ if __name__ == "__main__":
         dataset = TextDataset(args.source, preprocess_config)
         batchs = DataLoader(
             dataset,
-            batch_size=8,
+            batch_size=1,
+            shuffle=False,
             collate_fn=dataset.collate_fn,
         )
     if args.mode == "single":

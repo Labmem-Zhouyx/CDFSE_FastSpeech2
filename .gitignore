@@ -121,3 +121,5 @@ hifigan/*.pth.tar
 submit2jizhi.json
 synsamples/
 run_synbatch.sh
+start.sh
+infer.sh

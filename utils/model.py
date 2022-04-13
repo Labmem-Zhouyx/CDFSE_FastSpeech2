@@ -70,7 +70,7 @@ def get_vocoder(config, device):
         elif speaker == "LibriTTS_22k":
             ckpt = torch.load("/apdcephfs/private_yatsenzhou/pretrained/hifigan/LibriTTS_22k/generator_universal.pth.tar")
         elif speaker == "AISHELL3_22k":
-            ckpt = torch.load("/apdcephfs/private_yatsenzhou/pretrained/hifigan/AISHELL3_22k/g_03000000")
+            ckpt = torch.load("/apdcephfs/private_yatsenzhou/pretrained/hifigan/AISHELL3_22k/g_03900000")
         elif speaker == "DataBaker_16k":
             ckpt = torch.load("/apdcephfs/private_yatsenzhou/pretrained/hifigan/DataBaker_16k/g_01000000")
 

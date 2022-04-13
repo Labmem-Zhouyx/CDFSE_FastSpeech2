@@ -15,7 +15,7 @@ class FastSpeech2Loss(nn.Module):
         ]
         self.mse_loss = nn.MSELoss()
         self.mae_loss = nn.L1Loss()
-        self.ce_loss = nn.CrossEntropyLoss(ignore_index=0)
+        self.phn_ce_loss = nn.CrossEntropyLoss(ignore_index=0)
         self.spk_ce_loss = nn.CrossEntropyLoss()
         self.cls_weight = model_config["weight"]["cls"]
 
@@ -100,13 +100,13 @@ class FastSpeech2Loss(nn.Module):
 
         # print("target:", speaker_targets)
         # print("pred:", speaker_predicts.argmax(-1))
-        cls_loss = self.ce_loss(ref_content_predicts.transpose(1, 2), ref_linguistic_targets)
+        phone_loss = self.phn_ce_loss(ref_content_predicts.transpose(1, 2), ref_linguistic_targets)
         ref_content_predicts = ref_content_predicts.argmax(-1).masked_select(ref_mel_masks)
         ref_linguistic_targets = ref_linguistic_targets.masked_select(ref_mel_masks)
-        cls_acc = (ref_content_predicts == ref_linguistic_targets).float().mean()
+        phone_acc = (ref_content_predicts == ref_linguistic_targets).float().mean()
 
         total_loss = (
-            mel_loss + postnet_mel_loss + duration_loss + pitch_loss + energy_loss + self.cls_weight * cls_loss + self.cls_weight * speaker_loss
+            mel_loss + postnet_mel_loss + duration_loss + pitch_loss + energy_loss + self.cls_weight * phone_loss + self.cls_weight * speaker_loss
         )
 
 
@@ -117,7 +117,7 @@ class FastSpeech2Loss(nn.Module):
             pitch_loss,
             energy_loss,
             duration_loss,
-            cls_loss,
-            cls_acc,
+            phone_loss,
+            phone_acc,
             speaker_loss,
         )

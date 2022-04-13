@@ -20,10 +20,10 @@ _pinyin = ["@" + s for s in pinyin.valid_symbols]
 # Export all symbols:
 symbols = (
     [_pad]
-    + list(_special)
-    + list(_punctuation)
-    + list(_letters)
-    + _arpabet
+    # + list(_special)
+    # + list(_punctuation)
+    # + list(_letters)
+    # + _arpabet
     + _pinyin
     + _silences
 )

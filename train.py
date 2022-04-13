@@ -103,7 +103,7 @@ def main(args, configs):
                 if step % log_step == 0:
                     # losses = [l.item() for l in losses]
                     message1 = "Step {}/{}, ".format(step, total_step)
-                    message2 = "Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, Duration Loss: {:.4f}, Cls Loss: {:.4f}, Cls acc: {:.4f}".format(
+                    message2 = "Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, Duration Loss: {:.4f}, PhnCls Loss: {:.4f}, PhnCls acc: {:.4f}".format(
                         *losses
                     )
 

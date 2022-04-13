@@ -7,8 +7,7 @@ import torch.nn.functional as F
 
 from transformer import Encoder, Decoder, PostNet, MelEncoder
 from .modules import AdversarialClassifier, VarianceAdaptor
-from .gst import StyleTokenLayer
-from .reference import NormalEncoder, DownsampleEncoder, ReferenceAttention
+from .cdfse_modules import NormalEncoder, DownsampleEncoder, ReferenceAttention
 from utils.tools import get_mask_from_lengths
 from text.symbols import symbols
 
@@ -44,10 +43,6 @@ class FastSpeech2(nn.Module):
             in_dim=model_config["frame_encoder"]["out_dim"],
             out_dim=len(symbols),
             hidden_dims=model_config["classifier"]["cls_hidden"]
-        )
-
-        self.content_embedding = nn.Embedding(
-            len(symbols), model_config["frame_encoder"]["out_dim"]
         )
         
         self.ds_content_encoder = DownsampleEncoder(
@@ -85,17 +80,6 @@ class FastSpeech2(nn.Module):
                 in_dim=model_config["downsample_encoder"]["out_dim"],
                 out_dim=n_speaker,
                 hidden_dims=model_config["classifier"]["cls_hidden"]
-            )
-
-        #BPT
-        self.use_BPT = model_config["use_BPT"]
-
-        if self.use_BPT:
-            self.bpt = StyleTokenLayer(
-                query_dim=model_config["content_encoder"]["out_dim"],
-                num_tokens=model_config["bpt"]["num_tokens"],
-                token_embed_dim=model_config["bpt"]["token_embed_dim"],
-                num_heads=model_config["bpt"]["num_heads"],
             )
 
         # Reference Attention
@@ -138,20 +122,13 @@ class FastSpeech2(nn.Module):
         frame_feature = self.frame_encoder(ref_mels)
         content_feature = self.content_encoder(frame_feature, ref_mel_masks)
         ref_content_predict = self.phoneme_classifier(content_feature, is_reversal=False)
-        
-        if ref_linguistics is not None:
-            ref_content_embed = self.content_embedding(ref_linguistics)
-        else:
-            ref_content_embed = self.content_embedding(ref_content_predict.argmax(-1))
-
-        if self.use_BPT:
-            content_feature = self.bpt(content_feature)
 
         ref_local_content_emb = self.ds_content_encoder(content_feature)
         ref_local_speaker_emb = self.ds_speaker_encoder(frame_feature)
 
         if self.use_spkcls:
             ref_local_lens = ref_mel_lens // 16
+            ref_local_lens[ref_local_lens == 0] = 1
             ref_local_spk_masks = (1 - get_mask_from_lengths(ref_local_lens, max(ref_local_lens)).float()).unsqueeze(-1).expand(-1, -1, 256)
             spkemb = torch.sum(ref_local_speaker_emb * ref_local_spk_masks, axis=1) / ref_local_lens.unsqueeze(-1).expand(-1, 256)
             speaker_predicts = self.speaker_classifier(spkemb, is_reversal=False)
@@ -184,12 +161,10 @@ class FastSpeech2(nn.Module):
             e_control,
             d_control,
         )
-
         output, mel_masks = self.decoder(output, mel_masks)
         output = self.mel_linear(output)
 
         postnet_output = self.postnet(output) + output
-
         return (
             output,
             postnet_output,

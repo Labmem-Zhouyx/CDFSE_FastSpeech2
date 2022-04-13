@@ -247,11 +247,11 @@ class TextDataset(Dataset):
         ref_mel_lens = np.array([ref_mel.shape[0] for ref_mel in ref_mels])
         texts = pad_1D(texts)
         ref_mels = pad_2D(ref_mels)
-        
+
         return ids, raw_texts, texts, text_lens, max(text_lens), ref_mels, ref_mel_lens
 
     def preprocess_pinyin(self, text):
-        
+
         phones = []
         pinyins = text.split(' ')
         for p in pinyins:
@@ -267,7 +267,9 @@ class TextDataset(Dataset):
 
         return np.array(sequence)
 
-        
+
+
+
 if __name__ == "__main__":
     # Test
     import torch

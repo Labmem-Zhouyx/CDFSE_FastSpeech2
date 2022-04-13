@@ -28,7 +28,7 @@ frame_encoder:
   stride: 1
   kernel_size: 5
   padding: 2
-  dropout: 0.5
+  dropout: 0.2
   out_dim: 256
 
 downsample_encoder:
@@ -39,11 +39,6 @@ downsample_encoder:
   pooling_sizes: [2, 2, 2, 2]
   dropout: 0.2
   out_dim: 256
-
-bpt:
-  num_tokens: 40
-  token_embed_dim: 256
-  num_heads: 1
 
 reference_attention:
   key_dim: 256
@@ -56,8 +51,8 @@ use_spkcls: False
 weight:
   cls: 1.0
 
-max_seq_len: 3000
+max_seq_len: 2000
 
 vocoder:
   model: "HiFi-GAN" # support 'HiFi-GAN', 'MelGAN'
-  speaker: "LibriTTS_22k" # support  'LJSpeech', 'universal'
+  speaker: "LibriTTS_22k" 
