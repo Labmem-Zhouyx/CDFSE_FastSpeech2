@@ -17,7 +17,7 @@ This repo contains code accompanying the paper "Content-Dependent Fine-Grained S
 pip3 install -r requirements.txt
 ```
 
-### Data pre-processing
+### 2. Data pre-processing
 Please refer to [ming024/FastSpeech2](https://github.com/ming024/FastSpeech2)  for more details.
 
 First, run
@@ -53,4 +53,8 @@ For single:
 python3 synthesize.py --text "测试一下合成效果." --ref_mel [REF_MEL_PATH.npy] --restore_step 500000 --mode single -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml 
 ```
 
+## References
+
+- [ming024/FastSpeech2](https://github.com/ming024/FastSpeech2)
+- [jik876/HiFi-GAN](https://github.com/jik876/hifi-gan)
 	
