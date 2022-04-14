@@ -25,7 +25,7 @@ First, run
 python3 prepare_align.py config/AISHELL3/preprocess.yaml
 ```
 
-Download TextGrid Files or use MFA to align the corpus, then put TextGrid Files in processed_data/AISHELL/TextGrid/. 
+Download TextGrid Files or use MFA to align the corpus, then put TextGrid Files in processed_data/AISHELL3/TextGrid/. 
 
 Finally, run the preprocessing script 
 ```bash
@@ -37,6 +37,7 @@ python3 preprocess.py config/AISHELL3/preprocess.yaml
 
 Before training, it should be better to adapt the symbol dicts in text/symbols.py (only contains relevant phonemes), to make sure that the phoneme classification works well.
 
+Then, train the model
 ```bash
 python3 train.py -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml 
 ```
