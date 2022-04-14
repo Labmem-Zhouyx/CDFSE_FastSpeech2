@@ -1,3 +1,5 @@
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fkeonlee9420%2FSTYLER&count_bg=%2379C83D&title_bg=%23555555&icon=pytorch.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+
 ## Under Implementing...
 
 #  CDFSE_FastSpeech2
@@ -32,6 +34,9 @@ python3 preprocess.py config/AISHELL3/preprocess.yaml
 
 
 ### 3. Training
+
+Before training, it should be better to adapt the symbol dicts in text/symbols.py (only contains relevant phonemes), to make sure that the phoneme classification works well.
+
 ```bash
 python3 train.py -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml 
 ```

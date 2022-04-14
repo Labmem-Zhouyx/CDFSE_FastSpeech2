@@ -45,13 +45,12 @@ reference_attention:
   attention_dim: 128
   attention_dropout: 0.0
 
-use_BPT: False
 use_spkcls: False
 
 weight:
   cls: 1.0
 
-max_seq_len: 2000
+max_seq_len: 3000
 
 vocoder:
   model: "HiFi-GAN" # support 'HiFi-GAN', 'MelGAN'
