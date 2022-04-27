@@ -50,7 +50,7 @@ python3 synthesize.py --source synbatch_sample.txt --restore_step 500000 --mode 
 	
 For single:
 ```bash
-python3 synthesize.py --text "测试一下合成效果." --ref [REF_WAV_PATH.wav] --restore_step 500000 --mode single -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml 
+python3 synthesize.py --text "测试一下合成效果." --ref [REF_SPEECH_PATH.wav] --restore_step 500000 --mode single -p config/AISHELL3/preprocess.yaml -m config/AISHELL3/model.yaml -t config/AISHELL3/train.yaml 
 ```
 
 ## References
