@@ -45,7 +45,7 @@ reference_attention:
   attention_dim: 128
   attention_dropout: 0.0
 
-use_spkcls: False
+use_spkcls: True
 
 weight:
   cls: 1.0

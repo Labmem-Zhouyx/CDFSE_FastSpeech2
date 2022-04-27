@@ -26,7 +26,6 @@ def text_to_sequence(text, cleaner_names):
       List of integers corresponding to the symbols in the text
     """
     sequence = []
-
     # Check for curly braces and treat their contents as ARPAbet:
     while len(text):
         m = _curly_re.match(text)

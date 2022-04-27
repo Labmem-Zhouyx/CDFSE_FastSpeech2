@@ -5,6 +5,7 @@ from string import punctuation
 from tqdm import tqdm
 
 import torch
+import librosa
 import yaml
 import numpy as np
 from torch.utils.data import DataLoader
@@ -15,6 +16,7 @@ from utils.model import get_model, get_vocoder
 from utils.tools import to_device, synth_samples
 from dataset import TextDataset, Dataset
 from text import text_to_sequence
+import audio as Audio
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -140,10 +142,10 @@ if __name__ == "__main__":
         help="raw text to synthesize, for single-sentence mode only",
     )
     parser.add_argument(
-        "--ref_mel",
+        "--ref",
         type=str,
         default='',
-        help="Reference mel path for zero-shot inference, for single-sentence mode only",
+        help="Reference speech path (*.wav) for zero-shot inference, for single-sentence mode only",
     )
     parser.add_argument(
         "-p",
@@ -215,8 +217,22 @@ if __name__ == "__main__":
         elif preprocess_config["preprocessing"]["text"]["language"] == "zh":
             texts = np.array([preprocess_mandarin(args.text, preprocess_config)])
         text_lens = np.array([len(texts[0])])
-        if args.ref_mel != '':
-            ref_mels = np.array([np.load(os.path.join(preprocess_config["path"]["preprocessed_path"], "mel", args.ref_mel))])
+        
+        assert args.ref != ''
+        STFT = Audio.stft.TacotronSTFT(
+            preprocess_config["preprocessing"]["stft"]["filter_length"],
+            preprocess_config["preprocessing"]["stft"]["hop_length"],
+            preprocess_config["preprocessing"]["stft"]["win_length"],
+            preprocess_config["preprocessing"]["mel"]["n_mel_channels"],
+            preprocess_config["preprocessing"]["audio"]["sampling_rate"],
+            preprocess_config["preprocessing"]["mel"]["mel_fmin"],
+            preprocess_config["preprocessing"]["mel"]["mel_fmax"],
+        )
+        wav, _ = librosa.load(args.ref, preprocess_config["preprocessing"]["audio"]["sampling_rate"])
+        wav = wav.astype(np.float32)
+        mel_spectrogram, _ = Audio.tools.get_mel_from_wav(wav, STFT)
+        ref_mels = np.array([mel_spectrogram.T])
+
         ref_mel_lens = np.array([len(ref_mels[0])])
         batchs = [(ids, raw_texts, texts, text_lens, max(text_lens), ref_mels, ref_mel_lens)]
 
