@@ -79,7 +79,6 @@ def preprocess_mandarin(text, preprocess_config):
             phones += lexicon[p]
         else:
             phones.append("sp")
-    phones.append("sp")
 
     phones = "{" + " ".join(phones) + "}"
     print("Raw Text Sequence: {}".format(text))
@@ -229,6 +228,7 @@ if __name__ == "__main__":
             preprocess_config["preprocessing"]["mel"]["mel_fmax"],
         )
         wav, _ = librosa.load(args.ref, preprocess_config["preprocessing"]["audio"]["sampling_rate"])
+
         wav = wav.astype(np.float32)
         mel_spectrogram, _ = Audio.tools.get_mel_from_wav(wav, STFT)
         ref_mels = np.array([mel_spectrogram.T])

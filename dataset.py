@@ -13,7 +13,7 @@ from utils.tools import pad_1D, pad_2D
 
 class Dataset(Dataset):
     def __init__(
-        self, filename, preprocess_config, train_config, sort=False, drop_last=False
+        self, filename, preprocess_config, train_config, sort=False, drop_last=False, inference_mode=False
     ):
         self.dataset_name = preprocess_config["dataset"]
         self.preprocessed_path = preprocess_config["path"]["preprocessed_path"]
@@ -25,10 +25,13 @@ class Dataset(Dataset):
         )
         with open(os.path.join(self.preprocessed_path, "speakers.json")) as f:
             self.speaker_map = json.load(f)
+        with open(os.path.join(self.preprocessed_path, "speakerfile_dict.json")) as f:
+            self.speakerfile_dict = json.load(f)
+
         self.sort = sort
         self.drop_last = drop_last
+        self.inference_mode = inference_mode
         self.shuffle_refmel = train_config["dataset"]["shuffle_refmel"]
-        self.sample_refmel = train_config["dataset"]["sample_refmel"]
 
     def __len__(self):
         return len(self.text)
@@ -63,7 +66,11 @@ class Dataset(Dataset):
             "{}-duration-{}.npy".format(speaker, basename),
         )
         duration = np.load(duration_path)
-        ref_mel, ref_linguistic = self.get_reference(mel, phone, duration)
+
+        if self.inference_mode:
+            ref_mel, ref_linguistic = self.get_random_reference(speaker)
+        else:
+            ref_mel, ref_linguistic = self.get_reference(mel, phone, duration)
 
         sample = {
             "id": basename,
@@ -92,12 +99,6 @@ class Dataset(Dataset):
         # random shuffle by phoneme duration
         if self.shuffle_refmel:
             index = list(range(duration.shape[0]))
-            if self.sample_refmel:  # introduce random length to ref mel
-                tmp = []
-                for i in index:
-                    tmp += [i] * random.randint(0, 2)
-                if len(tmp) > 0:
-                    index = tmp
             random.shuffle(index)
             mel_slices_shuffle = []
             linguistic_slices_shuffle = []
@@ -111,6 +112,37 @@ class Dataset(Dataset):
             linguistic = np.concatenate(linguistic_slices)
 
         return mel_post, linguistic
+
+    def get_random_reference(self, speaker):
+        random_sample = random.choice(self.speakerfile_dict[speaker])
+        basename, phonetext = random_sample.split("|")[0], random_sample.split("|")[1]
+        ref_mel_path = os.path.join(
+            self.preprocessed_path,
+            "mel",
+            "{}-mel-{}.npy".format(speaker, basename),
+        )
+        duration_path = os.path.join(
+            self.preprocessed_path,
+            "duration",
+            "{}-duration-{}.npy".format(speaker, basename),
+        )
+        ref_mel = np.load(ref_mel_path)
+        duration = np.load(duration_path)
+        phone = np.array(text_to_sequence(phonetext, self.cleaners))
+
+        mel_slices = []
+        linguistic_slices = []
+        start = 0
+        for i in range(phone.shape[0]):
+            linguistic_slices.append([phone[i]] * duration[i])
+            mel_slices.append(ref_mel[start: start + duration[i]])
+            start += duration[i]
+
+        mel_post = np.concatenate(mel_slices)
+        linguistic = np.concatenate(linguistic_slices)
+
+        return mel_post, linguistic
+
 
     def process_meta(self, filename):
         with open(
@@ -208,10 +240,11 @@ def read_lexicon(lex_path):
 class TextDataset(Dataset):
     def __init__(self, filepath, preprocess_config):
         self.cleaners = preprocess_config["preprocessing"]["text"]["text_cleaners"]
+        self.language = preprocess_config["preprocessing"]["text"]["language"]
         self.preprocessed_path = preprocess_config["path"]["preprocessed_path"]
         self.basename, self.raw_text, self.ref_mel = self.process_meta(
             filepath
-        )
+        ) 
         self.lexicon = read_lexicon(preprocess_config["path"]["lexicon_path"])
 
     def __len__(self):
@@ -222,7 +255,10 @@ class TextDataset(Dataset):
         raw_text = self.raw_text[idx]
         ref_mel_path = self.ref_mel[idx]
         ref_mel = np.load(os.path.join(self.preprocessed_path, "mel", ref_mel_path))
-        phone = self.preprocess_pinyin(raw_text)
+        if self.language == "zh":
+            phone = self.preprocess_pinyin(raw_text)
+        else:
+            phone = self.preprocess_english(raw_text)
 
         return (basename, phone, raw_text, ref_mel)
 
@@ -263,6 +299,28 @@ class TextDataset(Dataset):
         phones = "{" + " ".join(phones) + "}"
         sequence = np.array(
             text_to_sequence(phones, [])
+        )
+
+        return np.array(sequence)
+
+    def preprocess_english(self, text):
+        from string import punctuation
+        from g2p_en import G2p
+        text = text.rstrip(punctuation)
+        g2p = G2p()
+        phones = []
+        words = re.split(r"([,;.\-\?\!\s+])", text)
+        for w in words:
+            if w.lower() in self.lexicon:
+                phones += self.lexicon[w.lower()]
+            else:
+                phones += list(filter(lambda p: p != " ", g2p(w)))
+        phones = "{" + "}{".join(phones) + "}"
+        phones = re.sub(r"\{[^\w\s]?\}", "{sp}", phones)
+        phones = phones.replace("}{", " ")
+
+        sequence = np.array(
+            text_to_sequence(phones, ["english_cleaners"])
         )
 
         return np.array(sequence)

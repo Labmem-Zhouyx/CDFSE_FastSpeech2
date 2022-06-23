@@ -103,7 +103,8 @@ def main(args, configs):
                 if step % log_step == 0:
                     # losses = [l.item() for l in losses]
                     message1 = "Step {}/{}, ".format(step, total_step)
-                    message2 = "Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, Duration Loss: {:.4f}, PhnCls Loss: {:.4f}, PhnCls acc: {:.4f}".format(
+                    message2 = "Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, \
+                        Duration Loss: {:.4f}, PhnCls Loss: {:.4f}, PhnCls acc: {:.4f}, SpkCls Loss: {:.4f}".format(
                         *losses
                     )
 
@@ -125,8 +126,12 @@ def main(args, configs):
                     log(
                         train_logger,
                         fig=fig,
+                        tag="Training/step_{}_{}_melspectrogram".format(step, tag),
+                    )
+                    log(
+                        train_logger,
                         ref_alignment=ref_align,
-                        tag="Training/step_{}_{}".format(step, tag),
+                        tag="Training/step_{}_{}_refalignment".format(step, tag),
                     )
                     sampling_rate = preprocess_config["preprocessing"]["audio"][
                         "sampling_rate"

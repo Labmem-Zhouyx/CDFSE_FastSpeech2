@@ -116,7 +116,7 @@ raw_data/
 output/
 *.npy
 TextGrid/
-hifigan/*.pth.tar
+hifigan/pretrained/*.pth.tar
 
 submit2jizhi.json
 synsamples/

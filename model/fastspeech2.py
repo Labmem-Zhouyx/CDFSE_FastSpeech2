@@ -17,7 +17,6 @@ class FastSpeech2(nn.Module):
     def __init__(self, preprocess_config, model_config):
         super(FastSpeech2, self).__init__()
         self.model_config = model_config
-
         self.encoder = Encoder(model_config)
         self.variance_adaptor = VarianceAdaptor(preprocess_config, model_config)
         self.decoder = Decoder(model_config)
@@ -26,7 +25,6 @@ class FastSpeech2(nn.Module):
             preprocess_config["preprocessing"]["mel"]["n_mel_channels"],
         )
         self.postnet = PostNet()
-        
         
         # Frame-level Encoder for Reference Mel
         self.frame_encoder = NormalEncoder(
@@ -67,6 +65,11 @@ class FastSpeech2(nn.Module):
             out_dim=model_config["downsample_encoder"]["out_dim"],
         )
 
+        self.ds_times = 1
+        for i in model_config["downsample_encoder"]["pooling_sizes"]:
+            self.ds_times *= i 
+
+        # If using speaker classification loss after local speaker embeddings
         self.use_spkcls = model_config["use_spkcls"]
         if self.use_spkcls:
             with open(
@@ -116,18 +119,16 @@ class FastSpeech2(nn.Module):
             else None
         )
         ref_mel_masks = get_mask_from_lengths(ref_mel_lens, max(ref_mel_lens))
-
+        
         output = self.encoder(texts, src_masks)
 
         frame_feature = self.frame_encoder(ref_mels)
         content_feature = self.content_encoder(frame_feature, ref_mel_masks)
         ref_content_predict = self.phoneme_classifier(content_feature, is_reversal=False)
-
         ref_local_content_emb = self.ds_content_encoder(content_feature)
         ref_local_speaker_emb = self.ds_speaker_encoder(frame_feature)
-
         if self.use_spkcls:
-            ref_local_lens = ref_mel_lens // 16
+            ref_local_lens = ref_mel_lens // self.ds_times
             ref_local_lens[ref_local_lens == 0] = 1
             ref_local_spk_masks = (1 - get_mask_from_lengths(ref_local_lens, max(ref_local_lens)).float()).unsqueeze(-1).expand(-1, -1, 256)
             spkemb = torch.sum(ref_local_speaker_emb * ref_local_spk_masks, axis=1) / ref_local_lens.unsqueeze(-1).expand(-1, 256)

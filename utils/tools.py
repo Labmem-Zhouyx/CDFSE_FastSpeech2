@@ -97,7 +97,7 @@ def log(
         logger.add_figure(tag, fig)
 
     if ref_alignment is not None:
-        logger.add_image("ReferenceAlignment/{}".format(tag), plot_reference_alignment_to_numpy(ref_alignment), step, dataformats='HWC')
+        logger.add_image(tag, plot_reference_alignment_to_numpy(ref_alignment), step, dataformats='HWC')
 
     if audio is not None:
         logger.add_audio(
@@ -229,7 +229,7 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
         # spk_emb = predictions[13][i, :src_len].detach().cpu().numpy()
         # phoneme_seq = targets[2][i, :src_len].detach().cpu().numpy()
         # for j in range(src_len):
-        #    np.save(os.path.join(path, "huatu", '{}_{}_{}.npy'.format(basename, str(j), str(phoneme_seq[j]))), spk_emb[j])
+        #    np.save(os.path.join(path, "tsne_spkemb", '{}_{}_{}.npy'.format(basename, str(j), str(phoneme_seq[j]))), spk_emb[j])
 
     from .model import vocoder_infer
     mel_predictions = predictions[1].transpose(1, 2)

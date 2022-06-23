@@ -206,6 +206,9 @@ class MelEncoder(nn.Module):
             ]
         )
 
+        self.IN = nn.InstanceNorm1d(config["transformer"]["encoder_hidden"])
+
+
     def forward(self, src_seq, mask, return_attns=False):
 
         enc_slf_attn_list = []
@@ -232,5 +235,10 @@ class MelEncoder(nn.Module):
             )
             if return_attns:
                 enc_slf_attn_list += [enc_slf_attn]
+
+        enc_output = enc_output.transpose(1, 2)
+        enc_output = self.IN(enc_output)
+        enc_output = enc_output.transpose(1, 2)
+
 
         return enc_output

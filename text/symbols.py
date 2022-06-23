@@ -16,18 +16,33 @@ _silences = ["@sp", "@spn", "@sil"]
 # Prepend "@" to ARPAbet symbols to ensure uniqueness (some are the same as uppercase letters):
 _arpabet = ["@" + s for s in cmudict.valid_symbols]
 _pinyin = ["@" + s for s in pinyin.valid_symbols]
+
+# # Containing all symbols
+# symbols = (
+#     [_pad]
+#     + list(_special)
+#     + list(_punctuation)
+#     + list(_letters)
+#     + _arpabet
+#     + _pinyin
+#     + _silences
+# )
 '''
-Export all symbols:
+Export all relevant symbols:
     For Chinese only, [_pad] + _pinyin + _silences
     For English only, [_pad] + _arpabet + _silences
     It can make sure that the phoneme classification works well.
 '''
+# Containing only Chinese
 symbols = (
     [_pad]
-    # + list(_special)
-    # + list(_punctuation)
-    # + list(_letters)
-    # + _arpabet
     + _pinyin
     + _silences
 )
+
+# # Containing only English
+# symbols = (
+#     [_pad]
+#     + _arpabet
+#     + _silences
+# )

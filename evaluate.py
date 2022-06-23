@@ -23,7 +23,7 @@ def evaluate(model, step, configs, logger=None, vocoder=None):
     if "subsets" in preprocess_config:
         val_set = preprocess_config["subsets"].get("val", "val") + '.txt'
     dataset = Dataset(
-        val_set, preprocess_config, train_config, sort=False, drop_last=False
+        val_set, preprocess_config, train_config, sort=False, drop_last=False, inference_mode=True
     )
     batch_size = train_config["optimizer"]["batch_size"]
     loader = DataLoader(
@@ -53,7 +53,8 @@ def evaluate(model, step, configs, logger=None, vocoder=None):
 
     loss_means = [loss_sum / len(dataset) for loss_sum in loss_sums]
 
-    message = "Validation Step {}, Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, Duration Loss: {:.4f}, PhnCls Loss: {:.4f}, PhnCls acc: {:.4f}, SpkCls Loss: {:.4f}".format(
+    message = "Validation Step {}, Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Pitch Loss: {:.4f}, Energy Loss: {:.4f}, \
+        Duration Loss: {:.4f}, PhnCls Loss: {:.4f}, PhnCls acc: {:.4f}, SpkCls Loss: {:.4f}".format(
         *([step] + [l for l in loss_means])
     )
 
@@ -70,8 +71,12 @@ def evaluate(model, step, configs, logger=None, vocoder=None):
         log(
             logger,
             fig=fig,
+            tag="Validation/step_{}_{}_melspectrogram".format(step, tag),
+        )
+        log(
+            logger,
             ref_alignment=ref_align,
-            tag="Validation/step_{}_{}".format(step, tag),
+            tag="Validation/step_{}_{}_refalignment".format(step, tag),
         )
         sampling_rate = preprocess_config["preprocessing"]["audio"]["sampling_rate"]
         log(
