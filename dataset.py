@@ -306,7 +306,6 @@ class TextDataset(Dataset):
     def preprocess_english(self, text):
         from string import punctuation
         from g2p_en import G2p
-        text = text.rstrip(punctuation)
         g2p = G2p()
         phones = []
         words = re.split(r"([,;.\-\?\!\s+])", text)

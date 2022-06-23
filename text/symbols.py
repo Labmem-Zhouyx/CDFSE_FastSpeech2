@@ -17,28 +17,30 @@ _silences = ["@sp", "@spn", "@sil"]
 _arpabet = ["@" + s for s in cmudict.valid_symbols]
 _pinyin = ["@" + s for s in pinyin.valid_symbols]
 
-# # Containing all symbols
-# symbols = (
-#     [_pad]
-#     + list(_special)
-#     + list(_punctuation)
-#     + list(_letters)
-#     + _arpabet
-#     + _pinyin
-#     + _silences
-# )
+
 '''
-Export all relevant symbols:
+Export relevant symbols:
     For Chinese only, [_pad] + _pinyin + _silences
     For English only, [_pad] + _arpabet + _silences
-    It can make sure that the phoneme classification works well.
+    It can make the phoneme classification work better.
 '''
-# Containing only Chinese
+# Containing all symbols
 symbols = (
     [_pad]
+    + list(_special)
+    + list(_punctuation)
+    + list(_letters)
+    + _arpabet
     + _pinyin
     + _silences
 )
+
+# # Containing only Chinese
+# symbols = (
+#     [_pad]
+#     + _pinyin
+#     + _silences
+# )
 
 # # Containing only English
 # symbols = (

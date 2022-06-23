@@ -119,7 +119,6 @@ class FastSpeech2(nn.Module):
             else None
         )
         ref_mel_masks = get_mask_from_lengths(ref_mel_lens, max(ref_mel_lens))
-        
         output = self.encoder(texts, src_masks)
 
         frame_feature = self.frame_encoder(ref_mels)
