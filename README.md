@@ -4,7 +4,7 @@
 #  CDFSE_FastSpeech2
 This repo contains code accompanying the paper "Content-Dependent Fine-Grained Speaker Embedding for Zero-Shot Speaker Adaptation in Text-to-Speech Synthesis", which is implemented based on [ming024/FastSpeech2](https://github.com/ming024/FastSpeech2) (much thanks!).
 
-*2022-06-15 Update: This work has been accepted by Interspeech 2022.* 
+*2022-06-15 Update: This work has been accepted to Interspeech 2022.* 
 
 ## [Samples](https://thuhcsi.github.io/interspeech2022-cdfse-tts/) | [Paper](https://arxiv.org/abs/2204.00990)
 
