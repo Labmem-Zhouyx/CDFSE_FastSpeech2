@@ -2,7 +2,8 @@ import argparse
 
 import yaml
 
-from preprocessor.preprocessor import Preprocessor
+from preprocessor import preprocessor
+from preprocessor import preprocessor_multiset
 
 
 if __name__ == "__main__":
@@ -11,5 +12,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
-    preprocessor = Preprocessor(config)
+    if "LibriTTS" in config["dataset"]:
+        preprocessor = preprocessor_multiset.Preprocessor(config)
+    else:
+        preprocessor = preprocessor.Preprocessor(config)
     preprocessor.build_from_path()
