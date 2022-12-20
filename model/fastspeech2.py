@@ -118,7 +118,8 @@ class FastSpeech2(nn.Module):
             if mel_lens is not None
             else None
         )
-        ref_mel_masks = get_mask_from_lengths(ref_mel_lens, max(ref_mel_lens))
+        max_ref_mel_lens = ref_mels.shape[1]
+        ref_mel_masks = get_mask_from_lengths(ref_mel_lens, max_ref_mel_lens)
         output = self.encoder(texts, src_masks)
 
         frame_feature = self.frame_encoder(ref_mels)
@@ -129,7 +130,8 @@ class FastSpeech2(nn.Module):
         if self.use_spkcls:
             ref_local_lens = ref_mel_lens // self.ds_times
             ref_local_lens[ref_local_lens == 0] = 1
-            ref_local_spk_masks = (1 - get_mask_from_lengths(ref_local_lens, max(ref_local_lens)).float()).unsqueeze(-1).expand(-1, -1, 256)
+            max_ref_local_lens = max_ref_mel_lens // self.ds_times
+            ref_local_spk_masks = (1 - get_mask_from_lengths(ref_local_lens, max_ref_local_lens).float()).unsqueeze(-1).expand(-1, -1, 256)
             spkemb = torch.sum(ref_local_speaker_emb * ref_local_spk_masks, axis=1) / ref_local_lens.unsqueeze(-1).expand(-1, 256)
             speaker_predicts = self.speaker_classifier(spkemb, is_reversal=False)
         else:
